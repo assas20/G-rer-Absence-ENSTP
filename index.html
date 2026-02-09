@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste de Présence - ENSTP</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .logo-placeholder {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #1e3c72;
+            border: 4px solid #ffd700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .school-info h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .school-info h2 {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .school-info h3 {
+            font-size: 1.3em;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        .founder {
+            margin-top: 15px;
+            font-style: italic;
+            font-size: 1.1em;
+            color: #ffd700;
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 3px solid #e9ecef;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        /* Points Scale Info */
+        .points-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .points-info h4 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .points-scale {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+        }
+        
+        .point-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        /* Table Section */
+        .table-container {
+            padding: 25px;
+            overflow-x: auto;
+        }
+        
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .attendance-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .attendance-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .attendance-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .attendance-table tr:hover {
+            background: #e9ecef;
+        }
+        
+        .presence-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #28a745;
+        }
+        
+        .absence-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #dc3545;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .matricule {
+            font-family: monospace;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .points-display {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        
+        .points-2 { color: #28a745; }
+        .points-1-5 { color: #6c757d; }
+        .points-1 { color: #ffc107; }
+        .points-0-5 { color: #fd7e14; }
+        .points-0 { color: #dc3545; }
+        
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid #667eea;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        /* Modal for PDF Preview */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .close-modal:hover {
+            color: #000;
+        }
+        
+        /* PDF Preview Styles */
+        .pdf-preview {
+            border: 2px solid #ddd;
+            padding: 40px;
+            background: white;
+            font-family: 'Times New Roman', serif;
+        }
+        
+        .pdf-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px double #000;
+            padding-bottom: 20px;
+        }
+        
+        .pdf-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .pdf-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .pdf-table th, .pdf-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .pdf-table th {
+            background: #f0f0f0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .school-info h1 { font-size: 1.5em; }
+            .school-info h2 { font-size: 1.2em; }
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-group { justify-content: center; }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success { background: #28a745; }
+        .notification.error { background: #dc3545; }
+        .notification.info { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-placeholder">🏛️</div>
+                <div class="school-info">
+                    <h1>École Nationale Supérieure<br>des Travaux Publics</h1>
+                    <h2>المدرسة الوطنية العليا للأشغال العمومية</h2>
+                    <h3>Higher National School of Public Works</h3>
+                </div>
+                <div class="logo-placeholder">📚</div>
+            </div>
+            <div class="founder">Francis Janson</div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">📋 Liste de Présence - إدارة الحضور والغياب</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="dateInput" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Semestre</label>
+                    <select id="semestreInput">
+                        <option value="S1">Semestre 01</option>
+                        <option value="S2">Semestre 02</option>
+                        <option value="S3">Semestre 03</option>
+                        <option value="S4">Semestre 04</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Département</label>
+                    <select id="departementInput" onchange="updateClasses()">
+                        <option value="DIB">Département Infrastructures de Base (DIB)</option>
+                        <option value="DMS">Département Matériaux et Structures (DMS)</option>
+                        <option value="CP">Classes Préparatoires</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Année</label>
+                    <select id="anneeInput">
+                        <option value="1">1ère Année</option>
+                        <option value="2">2ème Année</option>
+                        <option value="3">3ème Année</option>
+                        <option value="prep">Préparatoire</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Spécialité</label>
+                    <input type="text" id="specialiteInput" placeholder="Ex: Classes préparatoires en sciences et technologies">
+                </div>
+                
+                <div class="form-group">
+                    <label>Groupe</label>
+                    <select id="groupeInput">
+                        <option value="07">Groupe 07</option>
+                        <option value="08">Groupe 08</option>
+                        <option value="01">Groupe 01</option>
+                        <option value="02">Groupe 02</option>
+                        <option value="03">Groupe 03</option>
+                        <option value="04">Groupe 04</option>
+                        <option value="05">Groupe 05</option>
+                        <option value="06">Groupe 06</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Matière</label>
+                    <input type="text" id="matiereInput" placeholder="Ex: Mécanique rationnelle 1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Enseignant</label>
+                    <input type="text" id="enseignantInput" placeholder="Nom de l'enseignant">
+                </div>
+                
+                <div class="form-group">
+                    <label>Année Académique</label>
+                    <input type="text" id="academiqueInput" value="2025/2026">
+                </div>
+            </div>
+
+            <div class="points-info">
+                <h4>📊 Barème de points CC Présence (sur 2):</h4>
+                <div class="points-scale">
+                    <div class="point-item">0 absence = 2 pts</div>
+                    <div class="point-item">1 absence = 1.5 pts</div>
+                    <div class="point-item">2 absences = 1 pt</div>
+                    <div class="point-item">3 absences = 0.5 pt</div>
+                    <div class="point-item">4+ absences = 0 pt</div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="chargerEtudiants()">
+                    📥 Charger les étudiants
+                </button>
+                <button class="btn btn-success" onclick="sauvegarderDonnees()">
+                    💾 Sauvegarder
+                </button>
+                <button class="btn btn-info" onclick="exporterPDF()">
+                    📄 Exporter PDF
+                </button>
+                <button class="btn btn-warning" onclick="exporterExcel()">
+                    📊 Exporter Excel
+                </button>
+            </div>
+            
+            <div class="spinner" id="loadingSpinner"></div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="table-container">
+            <div class="stats-container" id="statsContainer" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalStudents">0</div>
+                    <div class="stat-label">Total Étudiants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="presentCount">0</div>
+                    <div class="stat-label">Présents Aujourd'hui</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="absentCount">0</div>
+                    <div class="stat-label">Absents Aujourd'hui</div>
+                </div>
+            </div>
+
+            <!-- Attendance Table -->
+            <table class="attendance-table" id="attendanceTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Matricule</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Présent</th>
+                        <th>Absent</th>
+                        <th>Absences Semestre</th>
+                        <th>Points CC</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dynamic content -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>Aperçu du document PDF</h2>
+            <div id="pdfPreviewContent" class="pdf-preview">
+                <!-- Dynamic PDF content -->
+            </div>
+            <div class="btn-group" style="margin-top: 20px; justify-content: center;">
+                <button class="btn btn-primary" onclick="telechargerPDF()">Télécharger PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Données des étudiants
+        const etudiantsGroupe07 = [
+            { matricule: "242431271517", nom: "ALLOUCHE/علوش", prenom: "MOHAMMED ABDELLAH/محمد عبد الله" },
+            { matricule: "242433317211", nom: "BELAID/بلعيد", prenom: "WAIL/وائل" },
+            { matricule: "232335591206", nom: "BENABDERRAHMANE/بن عبد الرحمان", prenom: "Tahlil fadjer/تهليل فجر" },
+            { matricule: "232339367601", nom: "BEN AMOR/بن عمر", prenom: "Lokmane/لقمان" },
+            { matricule: "232337548820", nom: "BENKADDOUR/بن قدور", prenom: "Abdelkader mohieddine/عبدالقادر محي الدين" },
+            { matricule: "242431621505", nom: "BERZIGA/برزيقة", prenom: "MOHAMED/محمد" },
+            { matricule: "232333149803", nom: "BOUGHARA/بوغارة", prenom: "Mohamed achraf taissir/محمد أشرف تيسير" },
+            { matricule: "232338288604", nom: "BOUSBA/بوسبع", prenom: "Aymen/أيمن" },
+            { matricule: "232332396018", nom: "CHELLALI/شلالي", prenom: "Abdesselam/عبد السلام" },
+            { matricule: "232334530107", nom: "DIB/ديب", prenom: "Nesrine/نسرين" },
+            { matricule: "242435585310", nom: "GUADI/قعادي", prenom: "ZOHRA/الزهراء" },
+            { matricule: "242431433920", nom: "KADRI/قادري", prenom: "MOURAD/مراد" },
+            { matricule: "242431058905", nom: "KHETTAR/خطار", prenom: "AZOUAOU/أزواو" },
+            { matricule: "232333358914", nom: "MAOUCHE/معوش", prenom: "Abdelhak/عبد الحق" },
+            { matricule: "232334479701", nom: "MESSAOUDENE/مسعودان", prenom: "Chouaib/شعيب" },
+            { matricule: "232336355812", nom: "NECAIBIA/نصايبية", prenom: "Abdelmouaz/عبد المعز" },
+            { matricule: "242433027018", nom: "OUZENATI/أوزناتي", prenom: "Khokha/خوخة" },
+            { matricule: "242431277202", nom: "SARI/صاري", prenom: "AYMEN/أيمن" },
+            { matricule: "242432150607", nom: "SIDI MOUSSA/سيدي موسى", prenom: "MOHAMED YACINE/محمد ياسين" },
+            { matricule: "242431620519", nom: "YAHI/ياحي", prenom: "HADDA LYNA/حدة لينة" },
+            { matricule: "232335628405", nom: "ZERROUGA/زروقة", prenom: "Younes/يونس" }
+        ];
+
+        const etudiantsGroupe08 = [
+            { matricule: "232335345202", nom: "ABDEREZZAK/عبد الرزاق", prenom: "Akram/أكرم" },
+            { matricule: "242431057314", nom: "AMEZIANE/امزيان", prenom: "SID ALI/سيد علي" },
+            { matricule: "232332441711", nom: "BELAIDI/بلعيدي", prenom: "ABDELLATIF/عبد اللطيف" },
+            { matricule: "242431286601", nom: "BENADJEL/بن عجال", prenom: "WISSAM/وسام" },
+            { matricule: "232332518517", nom: "BENALI ABDALLAH/بن علي عبد الله", prenom: "Merouane/مروان" },
+            { matricule: "242431624903", nom: "BENGUESSOUM/بن قسوم", prenom: "MOHAMED AREZKI/محمد أرزقي" },
+            { matricule: "232331371817", nom: "BENKEZIM/بن قزيم", prenom: "SOFIANE/سفيان" },
+            { matricule: "232335395712", nom: "BIOU/بيو", prenom: "Mohammed amine/محمد أمين" },
+            { matricule: "242432257711", nom: "BOUHALOUANE/بوحلوان", prenom: "FAIZ/فايز" },
+            { matricule: "242438259409", nom: "BOUSBA/بوسبع", prenom: "CHOKRI/شكري" },
+            { matricule: "242432258517", nom: "BOUZAR DILMI/بوزار ديلمي", prenom: "DJIHAD/جهاد" },
+            { matricule: "242431244408", nom: "CHENDRI/شندري", prenom: "ZAKARIA/زكرياء" },
+            { matricule: "212432528819", nom: "DILMI/ديلمي", prenom: "ANES/انس" },
+            { matricule: "242435058614", nom: "GUEHAZ/قحاز", prenom: "SIFEDDINE/سيف الدين" },
+            { matricule: "242433040008", nom: "HAMZAOUI/حمزاوي", prenom: "DINA/دينة" },
+            { matricule: "242432542006", nom: "KHIAT/خياط", prenom: "SARRA/سارة" },
+            { matricule: "232332391014", nom: "LARBI/العربي", prenom: "Maria/مريا" },
+            { matricule: "232332564305", nom: "MAZOUZI/معزوزي", prenom: "Hadil/هديل" },
+            { matricule: "242431565611", nom: "MEZGHRANI/مزغراني", prenom: "DALIA/دالية" },
+            { matricule: "242433213105", nom: "RACHIDI/رشيدي", prenom: "ZAKARIA/زكرياء" },
+            { matricule: "242433167713", nom: "SEDDIKI/صديقي", prenom: "KHOULOUD/خلود" },
+            { matricule: "242435016105", nom: "SMAIL/سماعيل", prenom: "ZIAD/زياد" },
+            { matricule: "232335410009", nom: "YAHIAOUI/يحياوي", prenom: "Hamza/حمزة" },
+            { matricule: "232435216914", nom: "ZIOUAR/زيوار", prenom: "KHAOULA/خولة" }
+        ];
+
+        let currentStudents = [];
+        let attendanceData = {};
+        let semesterAbsences = {};
+
+        // Initialisation
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification ${type}`;
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        function updateClasses() {
+            const dept = document.getElementById('departementInput').value;
+            const anneeSelect = document.getElementById('anneeInput');
+            
+            if (dept === 'CP') {
+                anneeSelect.innerHTML = `
+                    <option value="prep">Préparatoire</option>
+                    <option value="1">1ère Année</option>
+                    <option value="2">2ème Année</option>
+                `;
+                document.getElementById('specialiteInput').value = "Classes préparatoires en sciences et technologies";
+            } else {
+                anneeSelect.innerHTML = `
+                    <option value="1">1ère Année</option>
+                    <option value="2">2ème Année</option>
+                    <option value="3">3ème Année</option>
+                `;
+            }
+        }
+
+        function chargerEtudiants() {
+            const groupe = document.getElementById('groupeInput').value;
+            const spinner = document.getElementById('loadingSpinner');
+            
+            spinner.style.display = 'block';
+            
+            setTimeout(() => {
+                currentStudents = groupe === '07' ? [...etudiantsGroupe07] : [...etudiantsGroupe08];
+                
+                // Charger les absences sauvegardées
+                const savedData = localStorage.getItem(`absences_${groupe}_${document.getElementById('semestreInput').value}`);
+                if (savedData) {
+                    semesterAbsences = JSON.parse(savedData);
+                } else {
+                    semesterAbsences = {};
+                    currentStudents.forEach(s => semesterAbsences[s.matricule] = 0);
+                }
+                
+                afficherTableau();
+                spinner.style.display = 'none';
+                showNotification('Étudiants chargés avec succès!');
+            }, 500);
+        }
+
+        function calculerPoints(absences) {
+            if (absences === 0) return { points: 2, class: 'points-2' };
+            if (absences === 1) return { points: 1.5, class: 'points-1-5' };
+            if (absences === 2) return { points: 1, class: 'points-1' };
+            if (absences === 3) return { points: 0.5, class: 'points-0-5' };
+            return { points: 0, class: 'points-0' };
+        }
+
+        function afficherTableau() {
+            const tbody = document.getElementById('tableBody');
+            const table = document.getElementById('attendanceTable');
+            const stats = document.getElementById('statsContainer');
+            
+            tbody.innerHTML = '';
+            
+            currentStudents.forEach((etudiant, index) => {
+                const absences = semesterAbsences[etudiant.matricule] || 0;
+                const points = calculerPoints(absences);
+                const today = new Date().toISOString().split('T')[0];
+                const isPresent = attendanceData[`${etudiant.matricule}_${today}`] === true;
+                const isAbsent = attendanceData[`${etudiant.matricule}_${today}`] === false;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="matricule">${etudiant.matricule}</td>
+                    <td class="student-name">${etudiant.nom}</td>
+                    <td>${etudiant.prenom}</td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" class="presence-checkbox" 
+                               ${isPresent ? 'checked' : ''} 
+                               onchange="marquerPresence('${etudiant.matricule}', true, this)"
+                               ${isAbsent ? 'disabled' : ''}>
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" class="absence-checkbox" 
+                               ${isAbsent ? 'checked' : ''} 
+                               onchange="marquerPresence('${etudiant.matricule}', false, this)"
+                               ${isPresent ? 'disabled' : ''}>
+                    </td>
+                    <td style="text-align: center; font-weight: 600;">${absences}</td>
+                    <td style="text-align: center;" class="points-display ${points.class}">
+                        ${points.points} / 2
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            table.style.display = 'table';
+            stats.style.display = 'grid';
+            updateStats();
+        }
+
+        function marquerPresence(matricule, present, checkbox) {
+            const today = new Date().toISOString().split('T')[0];
+            const row = checkbox.closest('tr');
+            const presenceBox = row.querySelector('.presence-checkbox');
+            const absenceBox = row.querySelector('.absence-checkbox');
+            
+            if (present) {
+                attendanceData[`${matricule}_${today}`] = true;
+                absenceBox.disabled = true;
+                absenceBox.checked = false;
+                // Retirer une absence si elle existait
+                if (semesterAbsences[matricule] > 0) {
+                    semesterAbsences[matricule]--;
+                }
+            } else {
+                attendanceData[`${matricule}_${today}`] = false;
+                presenceBox.disabled = true;
+                presenceBox.checked = false;
+                // Ajouter une absence
+                semesterAbsences[matricule] = (semesterAbsences[matricule] || 0) + 1;
+            }
+            
+            afficherTableau();
+            sauvegarderLocal();
+        }
+
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            let present = 0, absent = 0;
+            
+            currentStudents.forEach(s => {
+                if (attendanceData[`${s.matricule}_${today}`] === true) present++;
+                else if (attendanceData[`${s.matricule}_${today}`] === false) absent++;
+            });
+            
+            document.getElementById('totalStudents').textContent = currentStudents.length;
+            document.getElementById('presentCount').textContent = present;
+            document.getElementById('absentCount').textContent = absent;
+        }
+
+        function sauvegarderLocal() {
+            const groupe = document.getElementById('groupeInput').value;
+            const semestre = document.getElementById('semestreInput').value;
+            localStorage.setItem(`absences_${groupe}_${semestre}`, JSON.stringify(semesterAbsences));
+            localStorage.setItem(`attendance_${groupe}`, JSON.stringify(attendanceData));
+        }
+
+        function sauvegarderDonnees() {
+            sauvegarderLocal();
+            showNotification('Données sauvegardées avec succès!');
+        }
+
+        function exporterPDF() {
+            if (currentStudents.length === 0) {
+                showNotification('Veuillez d\'abord charger les étudiants!', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('pdfModal');
+            const content = document.getElementById('pdfPreviewContent');
+            
+            const date = document.getElementById('dateInput').value;
+            const semestre = document.getElementById('semestreInput').value;
+            const dept = document.getElementById('departementInput').value;
+            const annee = document.getElementById('anneeInput').value;
+            const specialite = document.getElementById('specialiteInput').value;
+            const groupe = document.getElementById('groupeInput').value;
+            const matiere = document.getElementById('matiereInput').value;
+            const enseignant = document.getElementById('enseignantInput').value;
+            const academique = document.getElementById('academiqueInput').value;
+            
+            let deptName = dept === 'DIB' ? 'Département Infrastructures de Base' : 
+                          dept === 'DMS' ? 'Département Matériaux et Structures' : 
+                          'Département Classes Préparatoires';
+            
+            let tableRows = '';
+            currentStudents.forEach((s, i) => {
+                const absences = semesterAbsences[s.matricule] || 0;
+                const points = calculerPoints(absences);
+                const today = new Date().toISOString().split('T')[0];
+                const status = attendanceData[`${s.matricule}_${today}`] === true ? 'P' : 
+                              attendanceData[`${s.matricule}_${today}`] === false ? 'A' : '-';
+                
+                tableRows += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${s.matricule}</td>
+                        <td>${s.nom}</td>
+                        <td>${s.prenom}</td>
+                        <td>${status}</td>
+                        <td>${absences}</td>
+                        <td>${points.points}</td>
+                    </tr>
+                `;
+            });
+            
+            content.innerHTML = `
+                <div class="pdf-header">
+                    <div style="font-size: 0.9em; margin-bottom: 10px;">
+                        République Algérienne Démocratique et Populaire<br>
+                        الجمهورية الجزائرية الديمقراطية الشعبية<br>
+                        Ministère de l'Enseignement Supérieur et de la Recherche Scientifique<br>
+                        وزارة التعليم العالي و البحث العلمي
+                    </div>
+                    <div style="font-weight: bold; font-size: 1.2em; margin: 15px 0;">
+                        École Nationale Supérieure des Travaux Publics<br>
+                        المدرسة الوطنية العليا للأشغال العمومية
+                    </div>
+                    <div style="font-size: 1.1em; color: #666; margin-top: 10px;">
+                        ${deptName}<br>
+                        ${annee === 'prep' ? 'Classes Préparatoires' : annee + 'ème Année'}<br>
+                        Année Académique: ${academique}
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 20px 0; border: 2px solid #000; padding: 10px;">
+                    <div class="pdf-title">PV des Présences par Matière</div>
+                    <div style="margin-top: 10px;">
+                        <strong>Matière:</strong> ${matiere || 'Non spécifiée'} | 
+                        <strong>Enseignant:</strong> ${enseignant || 'Non spécifié'} | 
+                        <strong>Date:</strong> ${date} | 
+                        <strong>Période:</strong> ${semestre}
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <strong>Section/Groupe:</strong> Section 1 / Groupe ${groupe} | 
+                        <strong>Spécialité:</strong> ${specialite || 'Non spécifiée'}
+                    </div>
+                </div>
+                
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Matricule</th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Présence</th>
+                            <th>Absences<br>Semestre</th>
+                            <th>Points<br>CC/2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+                    <div>
+                        <strong>Signature de l'Enseignant</strong><br><br>
+                        ___________________
+                    </div>
+                    <div>
+                        <strong>Signature du Chef de Département</strong><br><br>
+                        ___________________
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.8em; color: #666; border-top: 1px solid #ccc; padding-top: 10px;">
+                    <strong>Légende:</strong> P = Présent, A = Absent, - = Non marqué | 
+                    <strong>Barème:</strong> 0abs=2pts, 1abs=1.5pts, 2abs=1pt, 3abs=0.5pt, 4+abs=0pt
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function telechargerPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            // En-tête
+            doc.setFontSize(10);
+            doc.text('République Algérienne Démocratique et Populaire', 105, 15, { align: 'center' });
+            doc.text('الجمهورية الجزائرية الديمقراطية الشعبية', 105, 20, { align: 'center' });
+            doc.text('Ministère de l\'Enseignement Supérieur et de la Recherche Scientifique', 105, 25, { align: 'center' });
+            doc.text('وزارة التعليم العالي و البحث العلمي', 105, 30, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('École Nationale Supérieure des Travaux Publics', 105, 40, { align: 'center' });
+            doc.text('المدرسة الوطنية العليا للأشغال العمومية', 105, 46, { align: 'center' });
+            
+            // Informations
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const dept = document.getElementById('departementInput').value;
+            let deptName = dept === 'DIB' ? 'Département Infrastructures de Base' : 
+                          dept === 'DMS' ? 'Département Matériaux et Structures' : 
+                          'Département Classes Préparatoires';
+            
+            doc.text(`${deptName} - ${document.getElementById('anneeInput').value === 'prep' ? 'Classes Préparatoires' : document.getElementById('anneeInput').value + 'ème Année'}`, 105, 55, { align: 'center' });
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PV des Présences par Matière', 105, 65, { align: 'center' });
+            
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Matière: ${document.getElementById('matiereInput').value || 'Non spécifiée'} | Enseignant: ${document.getElementById('enseignantInput').value || 'Non spécifié'}`, 105, 72, { align: 'center' });
+            doc.text(`Date: ${document.getElementById('dateInput').value} | Groupe: ${document.getElementById('groupeInput').value} | ${document.getElementById('semestreInput').value}`, 105, 77, { align: 'center' });
+            
+            // Tableau
+            const data = currentStudents.map((s, i) => {
+                const absences = semesterAbsences[s.matricule] || 0;
+                const points = calculerPoints(absences);
+                const today = new Date().toISOString().split('T')[0];
+                const status = attendanceData[`${s.matricule}_${today}`] === true ? 'P' : 
+                              attendanceData[`${s.matricule}_${today}`] === false ? 'A' : '-';
+                return [i+1, s.matricule, s.nom, s.prenom, status, absences, points.points];
+            });
+            
+            doc.autoTable({
+                startY: 85,
+                head: [['N°', 'Matricule', 'Nom', 'Prénom', 'Prés.', 'Abs.', 'Points']],
+                body: data,
+                theme: 'grid',
+                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontSize: 9 },
+                bodyStyles: { fontSize: 8 },
+                columnStyles: {
+                    0: { cellWidth: 10 },
+                    1: { cellWidth: 30 },
+                    4: { cellWidth: 12 },
+                    5: { cellWidth: 12 },
+                    6: { cellWidth: 15 }
+                }
+            });
+            
+            // Signatures
+            const finalY = doc.lastAutoTable.finalY + 15;
+            doc.text('Signature Enseignant: _________________', 20, finalY);
+            doc.text('Signature Chef Dépt: _________________', 120, finalY);
+            
+            // Barème
+            doc.setFontSize(8);
+            doc.text('Barème: 0abs=2pts | 1abs=1.5pts | 2abs=1pt | 3abs=0.5pts | 4+abs=0pts', 105, finalY + 15, { align: 'center' });
+            
+            doc.save(`Presence_${document.getElementById('groupeInput').value}_${document.getElementById('dateInput').value}.pdf`);
+            showNotification('PDF téléchargé avec succès!');
+        }
+
+        function exporterExcel() {
+            if (currentStudents.length === 0) {
+                showNotification('Veuillez d\'abord charger les étudiants!', 'error');
+                return;
+            }
+            
+            const data = currentStudents.map((s, i) => {
+                const absences = semesterAbsences[s.matricule] || 0;
+                const points = calculerPoints(absences);
+                const today = new Date().toISOString().split('T')[0];
+                const status = attendanceData[`${s.matricule}_${today}`] === true ? 'Présent' : 
+                              attendanceData[`${s.matricule}_${today}`] === false ? 'Absent' : 'Non marqué';
+                
+                return {
+                    'N°': i + 1,
+                    'Matricule': s.matricule,
+                    'Nom': s.nom,
+                    'Prénom': s.prenom,
+                    'Présence Aujourd\'hui': status,
+                    'Total Absences Semestre': absences,
+                    'Points CC (/2)': points.points
+                };
+            });
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Présences");
+            
+            // Ajouter les infos du cours
+            const info = [
+                ['École Nationale Supérieure des Travaux Publics'],
+                ['Liste de Présence'],
+                ['Date:', document.getElementById('dateInput').value],
+                ['Semestre:', document.getElementById('semestreInput').value],
+                ['Enseignant:', document.getElementById('enseignantInput').value],
+                ['Matière:', document.getElementById('matiereInput').value],
+                ['Groupe:', document.getElementById('groupeInput').value],
+                []
+            ];
+            XLSX.utils.sheet_add_aoa(ws, info, { origin: -1 });
+            
+            XLSX.writeFile(wb, `Presence_${document.getElementById('groupeInput').value}_${document.getElementById('dateInput').value}.xlsx`);
+            showNotification('Fichier Excel exporté avec succès!');
+        }
+
+        function closeModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+        }
+
+        // Fermer le modal en cliquant à l'extérieur
+        window.onclick = function(event) {
+            const modal = document.getElementById('pdfModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Charger les données sauvegardées au démarrage
+        window.onload = function() {
+            const groupe = document.getElementById('groupeInput').value;
+            const savedAttendance = localStorage.getItem(`attendance_${groupe}`);
+            if (savedAttendance) {
+                attendanceData = JSON.parse(savedAttendance);
+            }
+        }
+    </script>
+</body>
+</html>
